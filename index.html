@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>保健マスター 別角度100問(Ver.2)</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 4px;
+        }
+        h1 { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+        .progress-text { font-size: 0.9rem; color: var(--text-sub); font-weight: 600; }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .filter-btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .card-container {
+            perspective: 1000px;
+            flex: 1;
+            min-height: 330px;
+            display: flex;
+            cursor: pointer;
+        }
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+            background: #eef2ff;
+            border-color: #c7d2fe;
+        }
+        .card-category {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .card-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-weight: 500;
+            color: var(--text);
+            overflow-y: auto;
+            margin: auto 0;
+            white-space: pre-wrap;
+        }
+        .card-back .card-content {
+            color: #312e81;
+        }
+        .card-hint {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            padding-bottom: 12px;
+        }
+        .btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: background 0.1s;
+        }
+        .btn:active { background: #f1f5f9; }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .btn-primary:active { background: var(--primary-light); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>保健 応用100問 (Ver.2)</h1>
+            <div class="progress-text" id="progressText">1 / 100</div>
+        </header>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="filter-container" id="filterContainer">
+            <button class="filter-btn active" data-category="すべて">すべて (100)</button>
+            <button class="filter-btn" data-category="筋肉">筋肉</button>
+            <button class="filter-btn" data-category="WHO・医療">WHO・医療</button>
+            <button class="filter-btn" data-category="環境要因">環境要因</button>
+            <button class="filter-btn" data-category="公害の歴史">公害の歴史</button>
+            <button class="filter-btn" data-category="四大公害病">四大公害病</button>
+            <button class="filter-btn" data-category="健康水準・寿命">健康水準・寿命</button>
+            <button class="filter-btn" data-category="生活習慣病">生活習慣病</button>
+        </div>
+
+        <div class="card-container" id="cardContainer" onclick="toggleCard()">
+            <div class="card" id="card">
+                <div class="card-face card-front">
+                    <div>
+                        <div class="card-category" id="frontCategory">筋肉</div>
+                        <div class="card-content" id="frontContent">質問を読み込んでいます...</div>
+                    </div>
+                    <div class="card-hint">タップして答えを表示</div>
+                </div>
+                <div class="card-face card-back">
+                    <div>
+                        <div class="card-category" id="backCategory">筋肉</div>
+                        <div class="card-content" id="backContent">答え</div>
+                    </div>
+                    <div class="card-hint">タップして問題に戻る</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="prevCard()">◀ 前へ</button>
+            <button class="btn" onclick="shuffleCards()">シャッフル</button>
+            <button class="btn btn-primary" onclick="nextCard()">次へ ▶</button>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'hoken-app-v2';
+                self.addEventListener('install', e => {
+                    e.waitUntil(
+                        caches.open(CACHE_NAME).then(cache => cache.addAll(['./']))
+                    );
+                    self.skipWaiting();
+                });
+                self.addEventListener('fetch', e => {
+                    e.respondWith(
+                        caches.match(e.request).then(response => response || fetch(e.request))
+                    );
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const blobUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(blobUrl).catch(() => {});
+        }
+
+        const allQuestions = [
+            // 【筋肉・代謝・体格（詳細・別角度）】(1~15)
+            { cat: "筋肉", q: "筋肉のエネルギー産出において、化学エネルギーから何に変換されるか？", a: "力学的エネルギー" },
+            { cat: "筋肉", q: "筋収縮によって骨が移動し、動作を行う作用を何というか？", a: "運動作用" },
+            { cat: "筋肉", q: "体温を上げるための熱源作用において、発熱の何％が体温維持や放熱に使われるか？", a: "75%" },
+            { cat: "筋肉", q: "筋肉が打撃などの衝撃を吸収して保護する対象は、骨と何か？", a: "内臓（力学的ストレスからの保護）" },
+            { cat: "筋肉", q: "筋の収縮と弛緩がくり返され、血液やリンパ液の還流を促進する作用は？", a: "ポンプ作用" },
+            { cat: "筋肉", q: "BMIを求める際の分子（上側）に来る値は何か？", a: "体重（kg）" },
+            { cat: "筋肉", q: "BMIを求める際の分母（下側）の計算方法は何か？", a: "身長(m) × 身長(m)" },
+            { cat: "筋肉", q: "有酸素運動（エアロビック）に関係する筋肉のタイプは何か？", a: "遅筋" },
+            { cat: "筋肉", q: "遅筋が主にエネルギー源として利用する物質は何か？", a: "脂質" },
+            { cat: "筋肉", q: "無酸素運動（アネロビック）に関係する主な筋肉のタイプは何か？", a: "骨格筋" },
+            { cat: "筋肉", q: "骨格筋が主にエネルギー源として利用する物質は何か？", a: "糖質" },
+            { cat: "筋肉", q: "体全体や手足を動かす時に使われる骨格筋の組織は何か？", a: "横紋筋" },
+            { cat: "筋肉", q: "自分の意志で動かせる神経の仕組みを何というか？", a: "随意筋（体性神経支配）" },
+            { cat: "筋肉", q: "心臓を動かす心筋の神経支配は、自分の意志とは無関係な何神経か？", a: "自律神経（不随意筋）" },
+            { cat: "筋肉", q: "血管や消化管、気管支壁にある平滑筋の神経支配は何か？", a: "自律神経（不随意筋）" },
+
+            // 【WHO・平均寿命・医療制度（詳細・別角度）】(16~30)
+            { cat: "WHO・医療", q: "1945年に開催された、WHO設立の土台となった会議は何か？", a: "サンフランシスコ会議" },
+            { cat: "WHO・医療", q: "1946年にニューヨークで開かれ、WHO憲章が採択された会議は？", a: "国際保健会議" },
+            { cat: "WHO・医療", q: "WHO憲章前文で「完全に良好な動態」を英語の何と表現しているか？", a: "ウェルビーイング" },
+            { cat: "WHO・医療", q: "WHOの健康の定義で「単に病気あるいは〇〇でないということではない」の〇〇は？", a: "虚弱" },
+            { cat: "WHO・医療", q: "WHOが正式に発足した西暦年は？", a: "1948年" },
+            { cat: "WHO・医療", q: "平均寿命が伸びた要因の一つ「環境衛生の改善」の具体例は何か？", a: "上下水道の整備など" },
+            { cat: "WHO・医療", q: "平均寿命の伸びた要因である医学・医療の発展の具体例を2つ挙げよ。", a: "レントゲン、MRI、CT、抗生物質など" },
+            { cat: "WHO・医療", q: "国民皆保険制度が目指す「だれでも、どこでも、安価に、〇〇な医療が受けられる」の〇〇は？", a: "高度な" },
+            { cat: "WHO・医療", q: "国民健康保険法が全面改正された年は西暦何年か？", a: "1958年（昭和33年）" },
+            { cat: "WHO・医療", q: "全国民がいずれかの医療保険に加入する「国民皆保険」が始まった年は？", a: "1961年（昭和36年）" },
+            { cat: "WHO・医療", q: "医療費の窓口負担：義務教育就学前は何割か？", a: "2割" },
+            { cat: "WHO・医療", q: "医療費の窓口負担：15歳から69歳までの年齢層は何割か？", a: "3割" },
+            { cat: "WHO・医療", q: "医療費の窓口負担：70歳から74歳までの年齢層は何割か？", a: "2割" },
+            { cat: "WHO・医療", q: "医療費の窓口負担：75歳以上の原則は何割か？", a: "1割（※現役並み所得者は3割）" },
+            { cat: "WHO・医療", q: "医療費の自己負担が一定額を超えた場合に軽減される仕組みの名称は？", a: "高額療養費制度" },
+
+            // 【健康の成立要因・環境と大気汚染（詳細・別角度）】(31~45)
+            { cat: "環境要因", q: "人間の生物としての側面や生活習慣を指す健康の成立要因は？", a: "主体要因" },
+            { cat: "環境要因", q: "自然環境、経済・文化的環境、社会環境をまとめて何というか？", a: "環境要因" },
+            { cat: "環境要因", q: "「到達しうる最高基準の健康を享有することは万人の有する権利の一つ」とあるのはどこか？", a: "WHO憲章" },
+            { cat: "環境要因", q: "1986年のオタワ憲章において「健康は生きることの目的ではなく、何のための資源か？」", a: "より良く生きるための資源" },
+            { cat: "環境要因", q: "大気汚染の発生源のうち、火山や黄砂などは何と呼ばれるか？", a: "自然発生源" },
+            { cat: "環境要因", q: "大気汚染の発生源のうち、工場や火力発電所などは何と呼ばれるか？", a: "固定発生源" },
+            { cat: "環境要因", q: "大気汚染の発生源のうち、自動車、航空機、船舶などは何と呼ばれるか？", a: "移動発生源" },
+            { cat: "環境要因", q: "化石燃料の燃焼に伴い発生し、肺がんのリスクを高める物質の略称は？", a: "NOx（窒素酸化物）" },
+            { cat: "環境要因", q: "化石燃料の燃焼に伴い発生し、肺気腫などの原因となる物質の略称は？", a: "SOx（硫黄酸化物）" },
+            { cat: "環境要因", q: "粒径10µm以下の粒子であり、肺気腫の恐れがある物質の略称は？", a: "SPM（浮遊粒子状物質）" },
+            { cat: "環境要因", q: "微小粒子状物質の一般的な略称は何か？", a: "PM2.5" },
+            { cat: "環境要因", q: "大気汚染物質のNOxやSOxは、主に何の燃焼に伴い発生するか？", a: "化石燃料" },
+            { cat: "環境要因", q: "SPMの粒子の大きさの基準は、〇〇µm以下か？", a: "10µm以下" },
+            { cat: "環境要因", q: "健康の成立要因において、食生活や運動習慣が含まれるのはどちらの要因か？", a: "主体要因" },
+            { cat: "環境要因", q: "環境要因のうち、上下水道や住環境などが含まれるのは主にどの環境か？", a: "自然環境" },
+
+            // 【公害の歴史と対策（詳細・別角度）】(46~65)
+            { cat: "公害の歴史", q: "明治時代の公害の主な特徴として挙げられる期は何か？", a: "石炭・鉱業期" },
+            { cat: "公害の歴史", q: "昭和時代の公害の主な特徴として挙げられる期は何か？", a: "石油・高度経済成長期" },
+            { cat: "公害の歴史", q: "1962年に制定された、大気汚染対策の初期の法律は何か？", a: "煤煙規制法" },
+            { cat: "公害の歴史", q: "1967年に制定された公害対策の基本となる法律は？", a: "公害対策基本法" },
+            { cat: "公害の歴史", q: "1968年に制定された、大気を守るための法律は何か？", a: "大気汚染防止法" },
+            { cat: "公害の歴史", q: "1970年の「公害国会」が開催されたのは第何回臨時国会か？", a: "第64回臨時国会" },
+            { cat: "公害の歴史", q: "1970年の公害国会時の内閣総理大臣は誰か？", a: "佐藤栄作内閣" },
+            { cat: "公害の歴史", q: "1970年の公害国会で一挙に制定された法律の数はいくつ？", a: "14法（公害14法）" },
+            { cat: "公害の歴史", q: "中央省庁として「環境庁」が発足した年は西暦何年か？", a: "1971年" },
+            { cat: "公害の歴史", q: "1973年に制定された、公害被害者の救済・補償のための法律は？", a: "公害健康被害者補償法" },
+            { cat: "公害の歴史", q: "1993年に、公害対策基本法を発展継承して制定された法律は？", a: "環境基本法" },
+            { cat: "公害の歴史", q: "セメント工場などの煤煙に対し、排出源対策や緑化等を一体で行った山口県の対策は？", a: "宇部方式" },
+            { cat: "公害の歴史", q: "近年のSOxの発生源は「産業型」と何型に分けられるか？", a: "都市生活型（自動車・船舶など）" },
+            { cat: "公害の歴史", q: "自動車の排気ガスなどに紫外線が当たってできる光化学オキシダントによる現象は？", a: "光化学スモッグ" },
+            { cat: "公害の歴史", q: "1978年の自動車排出ガス規制で手本とされた、アメリカの厳しい法律は？", a: "マスキー法" },
+            { cat: "公害の歴史", q: "1978年の自動車排出ガス規制は、1970〜71年の排出量と比べて何％の削減を達成したか？", a: "90%削減" },
+            { cat: "公害の歴史", q: "1992年に制定された、自動車からの排出ガスを規制する法律は？", a: "自動車NOx法" },
+            { cat: "公害の歴史", q: "2001年に自動車NOx法が改正され、新たに規制対象に加えられた物質の略称は？", a: "PM" },
+            { cat: "公害の歴史", q: "地球温暖化の主な原因とされる気候変動物質の化学式は？", a: "CO₂" },
+            { cat: "公害の歴史", q: "オゾン層を破壊する原因物質として知られるものは何か？", a: "フロン" },
+
+            // 【四大公害病（詳細・別角度）】(66~80)
+            { cat: "四大公害病", q: "水俣病が公式確認された年は西暦何年か？", a: "1956年" },
+            { cat: "四大公害病", q: "水俣病が公式確認された県はどこか？", a: "熊本県" },
+            { cat: "四大公害病", q: "水俣病の原因となった有害金属物質は何か？", a: "メチル水銀" },
+            { cat: "四大公害病", q: "水俣病でメチル水銀が生成された、もとの製造過程の物質名は？", a: "アセトアルデヒド" },
+            { cat: "四大公害病", q: "水俣病において、メチル水銀はどのような経緯で人体に入ったか？", a: "工場排水 → 魚介類での生物濃縮 → 住民が摂取" },
+            { cat: "四大公害病", q: "第二水俣病が発生した川の流域名と、発生した年は？", a: "新潟県・阿賀野川流域（1965年発生）" },
+            { cat: "四大公害病", q: "第二水俣病の原因となった企業名は？", a: "昭和電工鹿瀬工場" },
+            { cat: "四大公害病", q: "イタイイタイ病が認定された年と、その流域の川の名前は？", a: "1968年認定、富山県・神通川流域" },
+            { cat: "四大公害病", q: "イタイイタイ病の原因物質となった金属名は？", a: "カドミウム" },
+            { cat: "四大公害病", q: "イタイイタイ病の原因企業となった鉱業所名は？", a: "神岡鉱業所" },
+            { cat: "四大公害病", q: "イタイイタイ病によって引き起こされた特有の骨の病気は何か？", a: "骨軟化症" },
+            { cat: "四大公害病", q: "四日市ぜんそく（三重県）の主な原因となった大気汚染物質は？", a: "硫黄酸化物（SOx）" },
+            { cat: "四大公害病", q: "水俣病や第二水俣病で冒される主な体の部位・神経系は何か？", a: "中枢神経障害" },
+            { cat: "四大公害病", q: "四大公害病の中で、大気汚染が原因とされた代表例はどれか？", a: "四日市ぜんそく" },
+            { cat: "四大公害病", q: "四大公害病のうち、水質汚濁や工場排水が原因となったものを3つすべて挙げよ。", a: "水俣病、第二水俣病、イタイイタイ病" },
+
+            // 【健康水準・乳児死亡率・寿命（詳細・別角度）】(81~92)
+            { cat: "健康水準・寿命", q: "可視化した健康指標をもとに、ある地域の健康の程度を表す言葉は？", a: "健康水準" },
+            { cat: "健康水準・寿命", q: "乳児死亡率とは、出生何人に対する、生後何未満の死亡数か？", a: "出生1,000人に対する、生後1年未満の死亡数" },
+            { cat: "健康水準・寿命", q: "乳児死亡率を調べることで、その国のどのような水準がわかるか？", a: "総合的社会水準（経済的豊かさや政治の安定など）" },
+            { cat: "健康水準・寿命", q: "ノート記載の乳児死亡率ワースト1位の国名は？", a: "シエラレオネ（78.30）" },
+            { cat: "健康水準・寿命", q: "ノート記載の乳児死亡率ワースト2位の国名は？", a: "中央アフリカ（75.40）" },
+            { cat: "健康水準・寿命", q: "ノート記載の乳児死亡率が最も低い（ベスト）国として挙げられているのは？", a: "モナコ（1.00）" },
+            { cat: "健康水準・寿命", q: "ノート記載のシンガポールと日本の乳児死亡率はいくつ？", a: "1.70" },
+            { cat: "健康水準・寿命", q: "1900年代（明治33年）の日本の平均寿命は約何歳か？", a: "約35歳" },
+            { cat: "健康水準・寿命", q: "1947年（昭和22年）の日本の平均寿命は約何歳か？", a: "約50歳" },
+            { cat: "健康水準・寿命", q: "日本の平均寿命がスウェーデンを越えた年は西暦何年か？", a: "1975年（昭和50年）" },
+            { cat: "健康水準・寿命", q: "最新データ（2024年）における日本の平均寿命は、男性が約81.09年、女性は何年か？", a: "87.13年" },
+            { cat: "健康水準・寿命", q: "昔と現在で「寿命が延びた主な要因」の変化について、昔の主な要因は何か？", a: "乳児死亡率の改善" },
+
+            // 【生活習慣病・死因の変化（詳細・別角度）】(93~100)
+            { cat: "生活習慣病", q: "現在の日本の3大死因の第1位となっている病気は何か？", a: "がん（悪性新生物）" },
+            { cat: "生活習慣病", q: "現在の日本の3大死因の第2位となっている病気は何か？", a: "心臓病（心疾患）" },
+            { cat: "生活習慣病", q: "現在の日本の3大死因の第3位となっている病気は何か？", a: "脳卒中（脳血管疾患）" },
+            { cat: "生活習慣病", q: "食事、運動、休養、飲酒などの習慣が発症や進行に関与する病気の総称は？", a: "生活習慣病" },
+            { cat: "生活習慣病", q: "生活習慣病の具体例として、痛風や糖尿病のほかに挙げられている脂質に関する病気は？", a: "脂質異常症" },
+            { cat: "生活習慣病", q: "生活習慣病の発症に関わる日常の行動要素のうち、食事・運動・休養と、あと一つは何か？", a: "飲酒（または喫煙）" },
+            { cat: "生活習慣病", q: "生活習慣病は、以前は何という名称で呼ばれていたか？", a: "成人病" },
+            { cat: "生活習慣病", q: "生活習慣病の予防において、個人の主体的な取り組みとともに改善が求められる、生活における日々の行動を何というか？", a: "生活習慣" }
+        ];
+
+        let currentFiltered = [...allQuestions];
+        let currentIndex = 0;
+        let currentCategory = "すべて";
+
+        const card = document.getElementById("card");
+        const frontCategory = document.getElementById("frontCategory");
+        const frontContent = document.getElementById("frontContent");
+        const backCategory = document.getElementById("backCategory");
+        const backContent = document.getElementById("backContent");
+        const progressText = document.getElementById("progressText");
+        const progressBar = document.getElementById("progressBar");
+
+        function updateCard() {
+            if (currentFiltered.length === 0) {
+                frontCategory.innerText = "お知らせ";
+                frontContent.innerText = "該当する問題がありません";
+                backCategory.innerText = "お知らせ";
+                backContent.innerText = "別のカテゴリーを選択してください";
+                progressText.innerText = "0 / 0";
+                progressBar.style.width = "0%";
+                return;
+            }
+
+            if (currentIndex >= currentFiltered.length) currentIndex = 0;
+            if (currentIndex < 0) currentIndex = currentFiltered.length - 1;
+
+            const q = currentFiltered[currentIndex];
+            card.classList.remove("is-flipped");
+
+            setTimeout(() => {
+                frontCategory.innerText = q.cat;
+                frontContent.innerText = q.q;
+                backCategory.innerText = q.cat + " (答え)";
+                backContent.innerText = q.a;
+                
+                progressText.innerText = `${currentIndex + 1} / ${currentFiltered.length}`;
+                progressBar.style.width = `${((currentIndex + 1) / currentFiltered.length) * 100}%`;
+            }, 150);
+        }
+
+        function toggleCard() {
+            card.classList.toggle("is-flipped");
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % currentFiltered.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + currentFiltered.length) % currentFiltered.length;
+            updateCard();
+        }
+
+        function shuffleCards() {
+            for (let i = currentFiltered.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentFiltered[i], currentFiltered[j]] = [currentFiltered[j], currentFiltered[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                e.target.classList.add("active");
+                
+                currentCategory = e.target.getAttribute("data-category");
+                if (currentCategory === "すべて") {
+                    currentFiltered = [...allQuestions];
+                } else {
+                    currentFiltered = allQuestions.filter(item => item.cat === currentCategory);
+                }
+                currentIndex = 0;
+                updateCard();
+            });
+        });
+
+        updateCard();
+    </script>
+</body>
+</html>
